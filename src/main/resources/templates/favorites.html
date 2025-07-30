@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Favorites - Movie Catalogue</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            padding: 4rem 0 3rem 0;
+            margin-bottom: 3rem;
+            border-radius: 0 0 50px 50px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .movie-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .movie-poster {
+            height: 350px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .movie-rating {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: white;
+            font-weight: bold;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.9rem;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+            border: none;
+            background: rgba(255, 107, 107, 0.9);
+            color: white;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .remove-btn:hover {
+            background: #ff5252;
+            transform: scale(1.15);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+        }
+
+        .overview-text {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 4.5em;
+            line-height: 1.5em;
+            color: #6c757d;
+        }
+
+        .card-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.75rem;
+        }
+
+        .release-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .empty-favorites {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+
+        .empty-favorites i {
+            font-size: 5rem;
+            margin-bottom: 2rem;
+            opacity: 0.3;
+        }
+
+        .search-highlight {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .sort-btn {
+            border: none;
+            background: transparent;
+            color: #6c757d;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .sort-btn.active {
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+
+        .sort-btn:hover {
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-film me-2"></i>Movie Catalogue
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">
+                        <i class="fas fa-fire me-1"></i>Trending
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/popular">
+                        <i class="fas fa-star me-1"></i>Popular
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/now-playing">
+                        <i class="fas fa-play me-1"></i>Now Playing
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/favorites">
+                        <i class="fas fa-heart me-1"></i>Favorites
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Search Form -->
+            <form class="d-flex" method="get" action="/search">
+                <div class="input-group">
+                    <input class="form-control" type="search" name="q" placeholder="Search movies..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="section-title">
+                    <i class="fas fa-heart me-3"></i>My Favorites
+                </h1>
+                <p class="section-subtitle">
+                    Your personal collection of favorite movies
+                </p>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <div class="stats-number" th:text="${totalFavorites}">0</div>
+                    <div class="stats-label">Favorite Movies</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Filter and Search Section -->
+    <div class="filter-section">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <form method="get" action="/favorites" class="d-flex">
+                    <input type="hidden" name="sort" th:value="${sortBy}">
+                    <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                        <input class="form-control" type="search" name="search"
+                               placeholder="Search your favorites..."
+                               th:value="${searchQuery}"
+                               aria-label="Search favorites">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <div class="btn-group" role="group" aria-label="Sort options">
+                    <span class="me-3 align-self-center text-muted">Sort by:</span>
+                    <a href="/favorites?sort=rating"
+                       class="sort-btn" th:classappend="${sortBy == 'rating' ? 'active' : ''}">
+                        <i class="fas fa-star me-1"></i>Rating
+                    </a>
+                    <span class="mx-2 text-muted">|</span>
+                    <a href="/favorites?sort=date"
+                       class="sort-btn" th:classappend="${sortBy == 'date' ? 'active' : ''}">
+                        <i class="fas fa-calendar me-1"></i>Release Date
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Results Info -->
+        <div th:if="${searchQuery != null && !searchQuery.isEmpty()}" class="mt-3">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong th:text="${#lists.size(favoriteMovies)}">0</strong> results found for
+                "<span th:text="${searchQuery}">search query</span>"
+                <a href="/favorites" class="ms-2">Clear search</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movies Grid -->
+    <div class="row" th:if="${favoriteMovies != null && !favoriteMovies.isEmpty()}">
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" th:each="movie : ${favoriteMovies}">
+            <div class="card movie-card h-100 shadow-sm">
+                <div class="position-relative">
+                    <img th:src="${movie.posterPath != null ? imageBaseUrl + '/w500' + movie.posterPath : '/images/no-poster.jpg'}"
+                         th:alt="${movie.title}"
+                         class="movie-poster card-img-top"
+                         onerror="this.src='/images/no-poster.jpg'">
+
+                    <!-- Remove Button -->
+                    <button class="remove-btn" th:data-movie-id="${movie.tmdbId}"
+                            th:onclick="'removeFromFavorites(' + ${movie.tmdbId} + ', this)'">
+                        <i class="fas fa-times"></i>
+                    </button>
+
+                    <!-- Rating Badge -->
+                    <div class="position-absolute bottom-0 start-0 m-3" th:if="${movie.voteAverage != null && movie.voteAverage > 0}">
+                            <span class="badge movie-rating">
+                                <i class="fas fa-star me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(movie.voteAverage, 1, 1)}">0.0</span>
+                            </span>
+                    </div>
+                </div>
+
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title" th:text="${movie.title}">Movie Title</h5>
+
+                    <p class="release-date mb-2" th:if="${movie.releaseDate != null}">
+                        <i class="fas fa-calendar me-1"></i>
+                        <span th:text="${#temporals.format(movie.releaseDate, 'MMMM dd, yyyy')}">Release Date</span>
+                    </p>
+
+                    <p class="overview-text flex-grow-1"
+                       th:text="${movie.overview != null && !movie.overview.isEmpty() ? movie.overview : 'No description available.'}"
+                       th:title="${movie.overview}">
+                        Movie overview...
+                    </p>
+
+                    <div class="mt-auto">
+                        <a th:href="@{'/movie/' + ${movie.tmdbId}}" class="btn btn-primary w-100">
+                            <i class="fas fa-info-circle me-2"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${favoriteMovies == null || favoriteMovies.isEmpty()}" class="empty-favorites">
+        <div class="container">
+            <i class="fas fa-heart-broken"></i>
+            <h3 th:if="${searchQuery == null || searchQuery.isEmpty()}">No Favorite Movies Yet</h3>
+            <h3 th:if="${searchQuery != null && !searchQuery.isEmpty()}">No Results Found</h3>
+
+            <p th:if="${searchQuery == null || searchQuery.isEmpty()}">
+                Start building your collection by adding movies to your favorites!<br>
+                Browse trending, popular, or search for specific movies to get started.
+            </p>
+
+            <p th:if="${searchQuery != null && !searchQuery.isEmpty()}">
+                No favorite movies found matching "<span th:text="${searchQuery}">search query</span>".<br>
+                Try searching with different keywords or <a href="/favorites">view all favorites</a>.
+            </p>
+
+            <div class="mt-4">
+                <a href="/" class="btn btn-primary me-3">
+                    <i class="fas fa-fire me-2"></i>Browse Trending
+                </a>
+                <a href="/popular" class="btn btn-outline-primary">
+                    <i class="fas fa-star me-2"></i>Popular Movies
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
+
+<!-- Loading Spinner -->
+<div class="position-fixed top-50 start-50 translate-middle" id="loadingSpinner" style="display: none; z-index: 9999;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-light py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5><i class="fas fa-film me-2"></i>Movie Catalogue</h5>
+                <p class="mb-0">Discover and save your favorite movies using TMDb API.</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="mb-0">
+                    <small>Powered by <a href="https://www.themoviedb.org/" target="_blank" class="text-light">The Movie Database</a></small>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    // Toast utility function
+    function showToast(message, type = 'success') {
+        const toastHtml = `
+                <div class="toast align-items-center text-bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+
+        const toastContainer = document.querySelector('.toast-container');
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+
+        const toastElement = toastContainer.lastElementChild;
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+
+        // Remove toast element after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    }
+
+    // Loading spinner utility
+    function showLoading() {
+        document.getElementById('loadingSpinner').style.display = 'block';
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingSpinner').style.display = 'none';
+    }
+
+    // Remove from favorites functionality
+    function removeFromFavorites(movieId, buttonElement) {
+        if (confirm('Are you sure you want to remove this movie from your favorites?')) {
+            showLoading();
+
+            fetch(`/favorites/remove/${movieId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => response.text())
+                .then(result => {
+                    hideLoading();
+
+                    if (result === 'success') {
+                        // Remove the movie card with animation
+                        const movieCard = buttonElement.closest('.col-lg-3, .col-md-4, .col-sm-6');
+                        movieCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        movieCard.style.opacity = '0';
+                        movieCard.style.transform = 'scale(0.8)';
+
+                        setTimeout(() => {
+                            movieCard.remove();
+                            // Update the favorites count
+                            updateFavoritesCount();
+                        }, 300);
+
+                        showToast('Movie removed from favorites!', 'info');
+                    } else {
+                        showToast('Error removing movie from favorites!', 'danger');
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    console.error('Error:', error);
+                    showToast('Error removing movie from favorites!', 'danger');
+                });
+        }
+    }
+
+    // Update favorites count
+    function updateFavoritesCount() {
+        const movieCards = document.querySelectorAll('.movie-card');
+        const countElement = document.querySelector('.stats-number');
+        if (countElement) {
+            countElement.textContent = movieCards.length;
+        }
+
+        // Show empty state if no movies left
+        if (movieCards.length === 0) {
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        }
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add any initialization code here if needed
+    });
+</script>
+</body>
+</html>
